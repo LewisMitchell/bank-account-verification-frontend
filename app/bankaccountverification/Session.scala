@@ -33,11 +33,10 @@ package bankaccountverification
  */
 
 import java.time.ZonedDateTime
-
 import bankaccountverification.api.{BusinessCompleteResponse, CompleteResponse, CompleteResponseAddress}
 import bankaccountverification.connector.ReputationResponseEnum.Error
 import bankaccountverification.connector._
-import bankaccountverification.web.AccountTypeRequestEnum
+import bankaccountverification.web.{AccountTypeRequestEnum, Forms}
 import bankaccountverification.web.AccountTypeRequestEnum.{Business, Personal}
 import bankaccountverification.web.business.BusinessVerificationRequest
 import bankaccountverification.web.personal.PersonalVerificationRequest
@@ -121,6 +120,7 @@ case class PersonalAccountDetails(accountName: Option[String],
                                   sortCodeBankName: Option[String] = None)
 
 object PersonalAccountDetails {
+  import bankaccountverification.web.Implicits._
   def apply(request: PersonalVerificationRequest, response: BarsPersonalAssessResponse): PersonalAccountDetails =
     response match {
       case success: BarsPersonalAssessSuccessResponse =>
@@ -128,7 +128,7 @@ object PersonalAccountDetails {
           Some(request.accountName),
           Some(request.sortCode),
           Some(request.accountNumber),
-          request.rollNumber,
+          request.rollNumber.map(_.stripSpaces),
           Some(success.accountNumberWithSortCodeIsValid),
           Some(success.accountExists),
           Some(success.nameMatches),
@@ -204,6 +204,8 @@ case class BusinessAccountDetails(companyName: Option[String],
                                   sortCodeBankName: Option[String] = None)
 
 object BusinessAccountDetails {
+  import bankaccountverification.web.Implicits._
+
   def apply(request: BusinessVerificationRequest, response: BarsBusinessAssessResponse): BusinessAccountDetails =
     response match {
       case success: BarsBusinessAssessSuccessResponse =>
@@ -211,7 +213,7 @@ object BusinessAccountDetails {
           Some(request.companyName),
           Some(request.sortCode),
           Some(request.accountNumber),
-          request.rollNumber,
+          request.rollNumber.map(_.stripSpaces),
           Some(success.accountNumberWithSortCodeIsValid),
           success.nonStandardAccountDetailsRequiredForBacs,
           Some(success.accountExists),

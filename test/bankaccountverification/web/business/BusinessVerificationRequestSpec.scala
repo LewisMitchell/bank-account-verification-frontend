@@ -218,6 +218,16 @@ class BusinessVerificationRequestSpec extends AnyWordSpec with Matchers with Gui
         error shouldNot be(None)
         error.get.message shouldBe "error.rollNumber.format"
       }
+
+      "roll number containing spaces is validated" in {
+        val bankAccountDetails =
+          BusinessVerificationRequest("Joe Blogs", "101010", "12345678", Some("A . B C "))
+        val bankAccountDetailsForm = BusinessVerificationRequest.form.fillAndValidate(bankAccountDetails)
+        bankAccountDetailsForm.hasErrors shouldBe false
+
+        val error = bankAccountDetailsForm.errors.find(e => e.key == "rollNumber")
+        error should be(None)
+      }
     }
   }
 

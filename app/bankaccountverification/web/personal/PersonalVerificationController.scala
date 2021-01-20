@@ -106,7 +106,8 @@ class PersonalVerificationController @Inject()(val appConfig: AppConfig, mcc: Me
               response match {
                 case Success(success: BarsPersonalAssessSuccessResponse) if success.accountExists == Yes =>
                   SeeOther(s"${journey.continueUrl}/$journeyId")
-                case _ => Redirect(routes.PersonalVerificationController.getConfirmDetails(journeyId))
+                case _ =>
+                  Redirect(routes.PersonalVerificationController.getConfirmDetails(journeyId))
               }
           }
     }

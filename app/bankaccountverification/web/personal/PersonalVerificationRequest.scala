@@ -61,5 +61,5 @@ object PersonalVerificationRequest {
         "rollNumber" -> optional(rollNumberMapping)
       )(PersonalVerificationRequest.apply)(PersonalVerificationRequest.unapply))
 
-  def accountNameMapping = text.verifying(Constraints.nonEmpty(errorMessage = "error.accountName.required"))
+//  def accountNameMapping = text.verifying(Constraints.nonEmpty(errorMessage = "error.accountName.required"))
 }

@@ -31,6 +31,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class VerificationService @Inject()(connector: BankAccountReputationConnector, repository: JourneyRepository) {
+  import Implicits._
+
   private val logger = Logger(this.getClass)
 
   def setAccountType(journeyId: BSONObjectID, accountType: AccountTypeRequestEnum)
@@ -41,8 +43,8 @@ class VerificationService @Inject()(connector: BankAccountReputationConnector, r
                     (implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Try[BarsPersonalAssessResponse]] =
     connector.assessPersonal(
       request.accountName,
-      Forms.stripSortCode(request.sortCode),
-      request.accountNumber,
+      request.sortCode.stripSpacesAndDashes(),
+      request.accountNumber.stripSpaces(),
       address.map(a => BarsAddress(a.lines, a.town, a.postcode)).getOrElse(BarsAddress.emptyAddress))
 
   def processPersonalAssessResponse(journeyId: BSONObjectID,
@@ -51,7 +53,8 @@ class VerificationService @Inject()(connector: BankAccountReputationConnector, r
                                    )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Form[PersonalVerificationRequest]] = {
 
     val (updatedForm, response) = assessResponse match {
-      case Success(response) => (form.validateUsingBarsPersonalAssessResponse(response), response)
+      case Success(response) =>
+        (form.validateUsingBarsPersonalAssessResponse(response), response)
       case Failure(e) =>
         logger.warn("Received error response from bank-account-reputation.validateBankDetails")
         (form, BarsPersonalAssessErrorResponse())
@@ -73,8 +76,8 @@ class VerificationService @Inject()(connector: BankAccountReputationConnector, r
     connector.assessBusiness(
       request.companyName,
       None,
-      Forms.stripSortCode(request.sortCode),
-      request.accountNumber,
+      request.sortCode.stripSpacesAndDashes(),
+      request.accountNumber.stripSpaces(),
       address.map(a => BarsAddress(a.lines, a.town, a.postcode)))
 
   def processBusinessAssessResponse(journeyId: BSONObjectID,
