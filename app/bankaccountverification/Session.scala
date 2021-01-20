@@ -104,6 +104,17 @@ object PersonalSession {
             None))
       case _ => None
     }
+
+  def canonicalizeBankDetails(personalSession: Option[PersonalSession]): Option[PersonalSession] = {
+    import bankaccountverification.web.Implicits._
+    personalSession.map(ps =>
+      ps.copy(
+        sortCode = ps.sortCode.map(_.stripSpacesAndDashes),
+        accountNumber = ps.accountNumber.map(_.stripSpacesAndDashes()),
+        rollNumber = ps.rollNumber.map(_.stripSpaces())
+      )
+    )
+  }
 }
 
 case class PersonalAccountDetails(accountName: Option[String],
@@ -120,15 +131,17 @@ case class PersonalAccountDetails(accountName: Option[String],
                                   sortCodeBankName: Option[String] = None)
 
 object PersonalAccountDetails {
+
   import bankaccountverification.web.Implicits._
+
   def apply(request: PersonalVerificationRequest, response: BarsPersonalAssessResponse): PersonalAccountDetails =
     response match {
       case success: BarsPersonalAssessSuccessResponse =>
         PersonalAccountDetails(
           Some(request.accountName),
-          Some(request.sortCode),
-          Some(request.accountNumber),
-          request.rollNumber.map(_.stripSpaces),
+          Some(request.sortCode.stripSpacesAndDashes()),
+          Some(request.accountNumber.stripSpacesAndDashes()),
+          request.rollNumber.map(_.stripSpaces()),
           Some(success.accountNumberWithSortCodeIsValid),
           Some(success.accountExists),
           Some(success.nameMatches),
@@ -204,6 +217,7 @@ case class BusinessAccountDetails(companyName: Option[String],
                                   sortCodeBankName: Option[String] = None)
 
 object BusinessAccountDetails {
+
   import bankaccountverification.web.Implicits._
 
   def apply(request: BusinessVerificationRequest, response: BarsBusinessAssessResponse): BusinessAccountDetails =
